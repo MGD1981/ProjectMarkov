@@ -1,5 +1,8 @@
 # coding=utf-8
-from sys import exit
+import pdb
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
 from random import randint
 
 CSI="\x1B["
@@ -51,29 +54,121 @@ getch = _Getch()
 def cls():
     print CSI+"30;47m" + CSI+"2J" # clears screen
 
-def aiturn(aicolor, boarddata):
-    # FIRST the computer needs to test if any move will cause it to win.
-    # This might be done more efficiently if it revolves around the player's
-    # last move.
+
+def listcopy2d(li):
+    newli = []
+    for subli in li:
+        newli.append([x for x in subli])
+    return newli
     
-    # If player is one move from a win, no chance for offensive.
-    # Need-Block Test:
-    
-    movetype = randint(1,5)
-    if movetype < 4:
-        move = aioffense(aicolor, boarddata)
+def findy(board, x):
+    y = 5
+    while board[x][y] != 0:
+        y -= 1
+    return y
+
+def minimax(depth, difficulty, boardproxy, aicolor):    
+    #pdb.set_trace()
+    #value = 0
+    if depth == 0:
+        value = assignvalue(boardproxy, aicolor)
+        return value
+
+    maxval = [-float('inf'),randint(0,6)]
+    for x in range(len(boardproxy)):
+        if boardproxy[x][0] != 0:
+            continue
+        #boardproxy = listcopy2d(boarddata)
+        y = findy(boardproxy, x)
+        boardproxy[x][y] = aicolor
+        value = (-minimax(depth - 1, difficulty, boardproxy, -aicolor))
+        if maxval[0] < value:
+            maxval[1] = x
+        maxval = [max(maxval[0], value), maxval[1]]
+        boardproxy[x][y] = 0
+    if depth == difficulty:
+        if maxval[0] == 0:
+            return randint(0,6)
+        else:
+            return maxval[1]
     else:
-        move = aidefense(aicolor, boarddata)
-    return move
-    
-    
-def aioffense(aicolor, boarddata):
-    if aicolor == 'red':
-        t = 1
-    else:
-        t = -1
-        
-    
+        return maxval[0]
+
+
+
+def assignvalue(boardproxy, aicolor):
+    assignedval = 0
+    xp = 0; yp = 0
+    # Horizontal score
+    while yp < 6:
+        t = boardproxy[xp][yp]
+        if boardproxy[xp][yp] == 0:
+            xp += 1
+        elif boardproxy[xp+1][yp] != t:
+            xp += 1
+        elif boardproxy[xp+2][yp] != t:
+            xp += 1
+        elif boardproxy[xp+3][yp] != t:
+            xp += 1
+        else:
+            assignedval += 10 * t * aicolor
+            xp += 1   
+        if xp > 3:
+            xp = 0; yp += 1
+    xp = 0; yp = 0
+    # Vertical score
+    while yp < 3:
+        t = boardproxy[xp][yp]
+        if boardproxy[xp][yp] == 0:
+            xp += 1
+        elif boardproxy[xp][yp+1] != t:
+            xp += 1
+        elif boardproxy[xp][yp+2] != t:
+            xp += 1
+        elif boardproxy[xp][yp+3] != t:
+            xp += 1
+        else:
+            assignedval += 10 * t * aicolor
+            xp += 1
+        if xp > 6:
+            xp = 0; yp += 1
+    xp = 0; yp = 0
+    # Diagonal-right score
+    while yp < 3:
+        t = boardproxy[xp][yp]
+        if boardproxy[xp][yp] == 0:
+            xp += 1
+        elif boardproxy[xp+1][yp+1] != t:
+            xp += 1
+        elif boardproxy[xp+2][yp+2] != t:
+            xp += 1
+        elif boardproxy[xp+3][yp+3] != t:
+            xp += 1
+        else:
+            assignedval += 10 * t * aicolor
+            xp += 1
+        if xp > 3:
+            xp = 0; yp += 1
+    xp = 3; yp = 0
+    # Diagonal-left score
+    while yp < 3:
+        t = boardproxy[xp][yp]
+        if boardproxy[xp][yp] == 0:
+            xp += 1
+        elif boardproxy[xp-1][yp+1] != t:
+            xp += 1
+        elif boardproxy[xp-2][yp+2] != t:
+            xp += 1
+        elif boardproxy[xp-3][yp+3] != t:
+            xp += 1
+        else:
+            assignedval += 10 * t * aicolor
+            xp += 1
+        if xp > 6:
+            xp = 3; yp += 1
+    return assignedval
+
+
 
 
 def wincheck(redturn, boarddata):
@@ -94,9 +189,9 @@ def wincheck(redturn, boarddata):
             x += 1
         else:
             if redturn:
-                return 'red'
+                return 1
             else:
-                return 'green'    
+                return -1    
         if x > 3:
             x = 0; y += 1
     x = 0; y = 0
@@ -112,9 +207,9 @@ def wincheck(redturn, boarddata):
             x += 1
         else:
             if redturn:
-                return 'red'
+                return 1
             else:
-                return 'green'    
+                return -1    
         if x > 6:
             x = 0; y += 1
     x = 0; y = 0
@@ -130,9 +225,9 @@ def wincheck(redturn, boarddata):
             x += 1
         else:
             if redturn:
-                return 'red'
+                return 1
             else:
-                return 'green'    
+                return -1    
         if x > 3:
             x = 0; y += 1
     x = 3; y = 0
@@ -148,15 +243,15 @@ def wincheck(redturn, boarddata):
             x += 1
         else:
             if redturn:
-                return 'red'
+                return 1
             else:
-                return 'green'
+                return -1
         if x > 6:
             x = 3; y += 1
          
     return 'none'
 
-def dispboard(redturn, ai, boarddisp):
+def dispboard(redturn, ai, boarddisp, aicolor):
     # Display the board
     cls()
     if redturn:
@@ -194,16 +289,17 @@ def dispboard(redturn, ai, boarddisp):
             boarddisp[4][y],boarddisp[5][y],boarddisp[6][y])
     print"               └─┴─┴─┴─┴─┴─┴─┘"
 
-    if ai and not redturn:
+    if ai and (
+            (not redturn and aicolor == -1) or (redturn and aicolor == 1)):
         print "\nComputer's turn; hit any key.\n"
-        getch() #Placeholder; THIS IS WHERE YOU RUN THE AI
+        #getch()
     else:
         print ("Select file:    " + CSI+"34;1m" + "1 2 3 4 5 6 7    Q" +
                CSI+"30;21m" + "uit")
         print "\n"
     
-def play(redturn, ai, boarddisp, boarddata, turnnum):
-    dispboard(redturn, ai, boarddisp)
+def play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor):
+    dispboard(redturn, ai, boarddisp, aicolor)
     if redturn:
         txtcolor = CSI+"31m"
     else:
@@ -219,22 +315,28 @@ def play(redturn, ai, boarddisp, boarddata, turnnum):
     choice = 0
     while choice == 0:
         choice = getch()
-        if choice == 'q' or choice == 'Q':
-            print "\n"
-            print CSI+"0m" # resets color
-            exit()
-        try:
-            choice = int(choice)
-        except ValueError:
-            choice = 0
-        if choice < 1 or choice > 7 or boarddata[choice-1][0] != 0:
-            choice = 0
+        if ai and (
+                (not redturn and aicolor == -1) or (redturn and aicolor == 1)):
+            choice = (minimax(difficulty, difficulty, 
+                              listcopy2d(boarddata), -aicolor) + 1)
+        else:     
+            if choice == 'q' or choice == 'Q':
+                print "\n"
+                print CSI+"0m" # resets color
+                exit()
+            try:
+                choice = int(choice)
+            except ValueError:
+                choice = 0
+            if choice < 1 or choice > 7 or boarddata[choice-1][0] != 0:
+                choice = 0
     # Red = 1, Green = -1
     if redturn:
         polarity = 1
     else:
         polarity = -1
     y = 5
+    #pdb.set_trace()
     while boarddata[choice-1][y] != 0:
         y -= 1
     boarddata[choice-1][y] = polarity
@@ -243,13 +345,13 @@ def play(redturn, ai, boarddisp, boarddata, turnnum):
     whowon = wincheck(redturn, boarddata)
     if whowon == 'none':
         redturn = not redturn
-        play(redturn, ai, boarddisp, boarddata, turnnum)
+        play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor)
     else:
-        if whowon == 'red':
+        if whowon == 1:
             whowon = CSI+"31m" + "Red" + CSI+"30m"
         else:
             whowon = CSI+"32m" + "Green" + CSI+"30m"
-        dispboard(redturn, ai, boarddisp)
+        dispboard(redturn, ai, boarddisp, aicolor)
         print "%s is the winner!\n" % whowon
         print CSI+"0m" # resets color
         exit() 
@@ -265,6 +367,7 @@ def boardsetup():
     
 def intro():
     cls()
+    aicolor = 0
     print "** CONNECT FOUR!! **"
     print "\nWhat type of game would you like to play?"
     print "\n" + CSI+"1m" + "1)" + CSI+"21m" + " One player"
@@ -277,6 +380,21 @@ def intro():
         exit()
     elif choice == '1':
         ai = True
+        cls()
+        print ("\nWould you like to play as " + CSI+"31m" + "R" +
+               CSI+"30m" + "ed or " + CSI+"32m" + "G" + CSI+"30m" + "reen?")
+        print "\n\n\n" + CSI+"1m" + "Q)" + CSI+"21m" + " Quit\n\n\n"
+        choice = getch()
+        if choice == "Q" or choice == "q":
+            print "\nGoodbye!"
+            print CSI+"0m" # resets color
+            exit()
+        elif choice == 'g' or choice == 'G':
+            aicolor = 1
+        elif choice == 'r' or choice == 'R':
+            aicolor = -1
+        else:
+            intro()
     elif choice == '2':
         ai = False
     else:
@@ -284,7 +402,8 @@ def intro():
     redturn = True
     turnnum = 0
     boarddisp, boarddata = boardsetup()
-    play(redturn, ai, boarddisp, boarddata, turnnum)
+    difficulty = 2
+    play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor)
 
 
 cls()
