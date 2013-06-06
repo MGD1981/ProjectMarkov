@@ -54,13 +54,6 @@ getch = _Getch()
 def cls():
     print CSI+"30;47m" + CSI+"2J" # clears screen
 
-
-def listcopy2d(li):
-    newli = []
-    for subli in li:
-        newli.append([x for x in subli])
-    return newli
-    
 def findy(board, x):
     y = 5
     while board[x][y] != 0:
@@ -69,8 +62,8 @@ def findy(board, x):
 
 def minimax(depth, difftest, boardproxy, aicolor):    
     #pdb.set_trace()
-    if depth == 0:
-        value = assignvalue(boardproxy, aicolor)
+    value = assignvalue(boardproxy, aicolor)
+    if depth == 0 or value != 0:
         return value
 
     maxval = [-float('inf'),randint(0,6)]
@@ -168,136 +161,33 @@ def assignvalue(boardproxy, aicolor):
     return assignedval
 
 
-
-
-def wincheck(redturn, boarddata):
-    if redturn:
-        t = 1
-    else:
-        t = -1
-    x = 0; y = 0
-    # Horizontal test
-    while y < 6:
-        if boarddata[x][y] != t:
-            x += 1
-        elif boarddata[x+1][y] != t:
-            x += 1
-        elif boarddata[x+2][y] != t:
-            x += 1
-        elif boarddata[x+3][y] != t:
-            x += 1
-        else:
-            if redturn:
-                return 1
-            else:
-                return -1    
-        if x > 3:
-            x = 0; y += 1
-    x = 0; y = 0
-    # Vertical test
-    while y < 3:
-        if boarddata[x][y] != t:
-            x += 1
-        elif boarddata[x][y+1] != t:
-            x += 1
-        elif boarddata[x][y+2] != t:
-            x += 1
-        elif boarddata[x][y+3] != t:
-            x += 1
-        else:
-            if redturn:
-                return 1
-            else:
-                return -1    
-        if x > 6:
-            x = 0; y += 1
-    x = 0; y = 0
-    # Diagonal-right test
-    while y < 3:
-        if boarddata[x][y] != t:
-            x += 1
-        elif boarddata[x+1][y+1] != t:
-            x += 1
-        elif boarddata[x+2][y+2] != t:
-            x += 1
-        elif boarddata[x+3][y+3] != t:
-            x += 1
-        else:
-            if redturn:
-                return 1
-            else:
-                return -1    
-        if x > 3:
-            x = 0; y += 1
-    x = 3; y = 0
-    # Diagonal-left test
-    while y < 3:
-        if boarddata[x][y] != t:
-            x += 1
-        elif boarddata[x-1][y+1] != t:
-            x += 1
-        elif boarddata[x-2][y+2] != t:
-            x += 1
-        elif boarddata[x-3][y+3] != t:
-            x += 1
-        else:
-            if redturn:
-                return 1
-            else:
-                return -1
-        if x > 6:
-            x = 3; y += 1
-         
-    return 'none'
-
 def dispboard(redturn, ai, boarddisp, aicolor):
     # Display the board
     cls()
     if redturn:
-        print CSI+"31m" + "Red" + CSI+"30m" + "'s turn     ┌─┬─┬─┬─┬─┬─┬─┐"
+        player = CSI+"31m" + "Red" + CSI+"30m" + "'s turn  "
     else:
-        print CSI+"32m" + "Green" + CSI+"30m" + "'s turn   ┌─┬─┬─┬─┬─┬─┬─┐"
-    y=0
-    print"               │%s│%s│%s│%s│%s│%s│%s│" % (
-            boarddisp[0][y],boarddisp[1][y],boarddisp[2][y],boarddisp[3][y],
-            boarddisp[4][y],boarddisp[5][y],boarddisp[6][y])
-    print"               ├─┼─┼─┼─┼─┼─┼─┤"
-    y+=1
-    print"               │%s│%s│%s│%s│%s│%s│%s│" % (
-            boarddisp[0][y],boarddisp[1][y],boarddisp[2][y],boarddisp[3][y],
-            boarddisp[4][y],boarddisp[5][y],boarddisp[6][y])
-    print"               ├─┼─┼─┼─┼─┼─┼─┤"
-    y+=1
-    print"               │%s│%s│%s│%s│%s│%s│%s│" % (
-            boarddisp[0][y],boarddisp[1][y],boarddisp[2][y],boarddisp[3][y],
-            boarddisp[4][y],boarddisp[5][y],boarddisp[6][y])
-    print"               ├─┼─┼─┼─┼─┼─┼─┤"
-    y+=1
-    print"               │%s│%s│%s│%s│%s│%s│%s│" % (
-            boarddisp[0][y],boarddisp[1][y],boarddisp[2][y],boarddisp[3][y],
-            boarddisp[4][y],boarddisp[5][y],boarddisp[6][y])
-    print"               ├─┼─┼─┼─┼─┼─┼─┤"
-    y+=1
-    print"               │%s│%s│%s│%s│%s│%s│%s│" % (
-            boarddisp[0][y],boarddisp[1][y],boarddisp[2][y],boarddisp[3][y],
-            boarddisp[4][y],boarddisp[5][y],boarddisp[6][y])
-    print"               ├─┼─┼─┼─┼─┼─┼─┤"
-    y+=1
-    print"               │%s│%s│%s│%s│%s│%s│%s│" % (
-            boarddisp[0][y],boarddisp[1][y],boarddisp[2][y],boarddisp[3][y],
-            boarddisp[4][y],boarddisp[5][y],boarddisp[6][y])
-    print"               └─┴─┴─┴─┴─┴─┴─┘"
+        player = CSI+"32m" + "Green" + CSI+"30m" + "'s turn"
+    print player + "   ┌─┬─┬─┬─┬─┬─┬─┐"
+    for y in range(6):
+        print"               │%s│%s│%s│%s│%s│%s│%s│" % (
+                boarddisp[0][y],boarddisp[1][y],boarddisp[2][y],
+                boarddisp[3][y],boarddisp[4][y],boarddisp[5][y],
+                boarddisp[6][y])
+        if y != 5:
+            print"               ├─┼─┼─┼─┼─┼─┼─┤"
+        else:
+            print"               └─┴─┴─┴─┴─┴─┴─┘"
 
     if ai and (
             (not redturn and aicolor == -1) or (redturn and aicolor == 1)):
         print "\nComputer's turn; hit any key.\n"
-        #getch()
     else:
-        print ("Select file:    " + CSI+"34;1m" + "1 2 3 4 5 6 7    Q" +
+        print ("Select column:  " + CSI+"34;1m" + "1 2 3 4 5 6 7    Q" +
                CSI+"30;21m" + "uit")
         print "\n"
     
-def play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor):
+def play(redturn, ai, boarddisp, boarddata, difficulty, aicolor):
     dispboard(redturn, ai, boarddisp, aicolor)
     if redturn:
         txtcolor = CSI+"31m"
@@ -305,8 +195,8 @@ def play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor):
         txtcolor = CSI+"32m"
     
     # Stalemate test
-    turnnum += 1
-    if turnnum == (6 * 7) + 1:
+    toprow = [(boarddata[x][0]) for x in range(len(boarddata))]
+    if 0 not in toprow:
         print "Stalemate!\n"
         print CSI+"0m" # resets color
         exit()
@@ -316,15 +206,14 @@ def play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor):
         choice = getch()
         if ai and (
                 (not redturn and aicolor == -1) or (redturn and aicolor == 1)):
-            if difficulty == 4:
-                choice = (minimax(2, 2, 
-                                  listcopy2d(boarddata), -aicolor) + 1)
-                if choice != 8:
-                    continue
-            
-            choice = (minimax(difficulty, difficulty,
-                                  listcopy2d(boarddata), -aicolor) + 1)
-                           
+            if difficulty == 1:
+                choice = minimax(1, 1, boarddata, -aicolor)
+            if difficulty >= 2:
+                choice = minimax(2, 2, boarddata, -aicolor)
+            if difficulty == 4 and choice == 7:
+                choice = minimax(difficulty, difficulty,
+                                 boarddata, -aicolor)
+            choice = choice + 1                   
         else:     
             if choice == 'q' or choice == 'Q':
                 print "\n"
@@ -338,26 +227,26 @@ def play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor):
                 choice = 0
                 
         if choice == 8:
+            choice = randint(1,7)
+            while boarddata[choice-1][0] != 0:
                 choice = randint(1,7)
+                
                 
     # Red = 1, Green = -1
     if redturn:
         polarity = 1
     else:
         polarity = -1
-    y = 5
-    #pdb.set_trace()
-    while boarddata[choice-1][y] != 0:
-        y -= 1
+    y = findy(boarddata, choice-1)
     boarddata[choice-1][y] = polarity
     boarddisp[choice-1][y] = txtcolor + "○" + CSI+"30m"
     # See if that's a win
-    whowon = wincheck(redturn, boarddata)
-    if whowon == 'none':
+    whowon = assignvalue(boarddata, aicolor)
+    if whowon == 0:
         redturn = not redturn
-        play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor)
+        play(redturn, ai, boarddisp, boarddata, difficulty, aicolor)
     else:
-        if whowon == 1:
+        if whowon < 0:
             whowon = CSI+"31m" + "Red" + CSI+"30m"
         else:
             whowon = CSI+"32m" + "Green" + CSI+"30m"
@@ -432,9 +321,8 @@ def intro():
     else:
         intro()
     redturn = True
-    turnnum = 0
     boarddisp, boarddata = boardsetup()
-    play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor)
+    play(redturn, ai, boarddisp, boarddata, difficulty, aicolor)
 
 
 cls()
