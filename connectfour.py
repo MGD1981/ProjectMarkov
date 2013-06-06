@@ -67,9 +67,8 @@ def findy(board, x):
         y -= 1
     return y
 
-def minimax(depth, difficulty, boardproxy, aicolor):    
+def minimax(depth, difftest, boardproxy, aicolor):    
     #pdb.set_trace()
-    #value = 0
     if depth == 0:
         value = assignvalue(boardproxy, aicolor)
         return value
@@ -78,17 +77,17 @@ def minimax(depth, difficulty, boardproxy, aicolor):
     for x in range(len(boardproxy)):
         if boardproxy[x][0] != 0:
             continue
-        #boardproxy = listcopy2d(boarddata)
         y = findy(boardproxy, x)
         boardproxy[x][y] = aicolor
-        value = (-minimax(depth - 1, difficulty, boardproxy, -aicolor))
+        value = (-minimax(depth - 1, difftest, boardproxy, -aicolor))
         if maxval[0] < value:
             maxval[1] = x
         maxval = [max(maxval[0], value), maxval[1]]
         boardproxy[x][y] = 0
-    if depth == difficulty:
+    if depth == difftest:
         if maxval[0] == 0:
-            return randint(0,6)
+            return 7 # Will turn 7 into randint, or move to another test
+                     # depending on difficulty.
         else:
             return maxval[1]
     else:
@@ -317,8 +316,15 @@ def play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor):
         choice = getch()
         if ai and (
                 (not redturn and aicolor == -1) or (redturn and aicolor == 1)):
-            choice = (minimax(difficulty, difficulty, 
-                              listcopy2d(boarddata), -aicolor) + 1)
+            if difficulty == 4:
+                choice = (minimax(2, 2, 
+                                  listcopy2d(boarddata), -aicolor) + 1)
+                if choice != 8:
+                    continue
+            
+            choice = (minimax(difficulty, difficulty,
+                                  listcopy2d(boarddata), -aicolor) + 1)
+                           
         else:     
             if choice == 'q' or choice == 'Q':
                 print "\n"
@@ -330,6 +336,10 @@ def play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor):
                 choice = 0
             if choice < 1 or choice > 7 or boarddata[choice-1][0] != 0:
                 choice = 0
+                
+        if choice == 8:
+                choice = randint(1,7)
+                
     # Red = 1, Green = -1
     if redturn:
         polarity = 1
@@ -381,8 +391,29 @@ def intro():
     elif choice == '1':
         ai = True
         cls()
+        print "\nSelect a difficulty:"
+        print "\n" + CSI+"1m" + "1)" + CSI+"21m" + " Child"
+        print CSI+"1m" + "2)" + CSI+"21m" + " Normal"
+        print CSI+"1m" + "3)" + CSI+"21m" + " Difficult"
+        print "\n\n\n" + CSI+"1m" + "Q)" + CSI+"21m" + " Quit\n\n\n"
+        choice = getch()
+        if choice == "Q" or choice == "q":
+            print "\nGoodbye!"
+            print CSI+"0m" # resets color
+            exit()
+        elif choice == '1':
+            difficulty = 1
+        elif choice == '2':
+            difficulty = 2
+        elif choice == '3':
+            difficulty = 4
+        else:
+            intro()
+            
+        cls()
         print ("\nWould you like to play as " + CSI+"31m" + "R" +
                CSI+"30m" + "ed or " + CSI+"32m" + "G" + CSI+"30m" + "reen?")
+        print "\n(Red player goes first.)"
         print "\n\n\n" + CSI+"1m" + "Q)" + CSI+"21m" + " Quit\n\n\n"
         choice = getch()
         if choice == "Q" or choice == "q":
@@ -396,13 +427,13 @@ def intro():
         else:
             intro()
     elif choice == '2':
+        difficulty = 0
         ai = False
     else:
         intro()
     redturn = True
     turnnum = 0
     boarddisp, boarddata = boardsetup()
-    difficulty = 2
     play(redturn, ai, boarddisp, boarddata, turnnum, difficulty, aicolor)
 
 
