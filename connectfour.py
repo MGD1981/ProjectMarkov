@@ -111,7 +111,7 @@ def assignvalue(boardproxy, aicolor):
         elif boardproxy[xp+3][yp] != t:
             xp += 1
         else:
-            assignedval += 10 * t * aicolor
+            assignedval += float('inf') * t * aicolor
             xp += 1   
         if xp > 3:
             xp = 0; yp += 1
@@ -128,7 +128,7 @@ def assignvalue(boardproxy, aicolor):
         elif boardproxy[xp][yp+3] != t:
             xp += 1
         else:
-            assignedval += 10 * t * aicolor
+            assignedval += float('inf') * t * aicolor
             xp += 1
         if xp > 6:
             xp = 0; yp += 1
@@ -145,7 +145,7 @@ def assignvalue(boardproxy, aicolor):
         elif boardproxy[xp+3][yp+3] != t:
             xp += 1
         else:
-            assignedval += 10 * t * aicolor
+            assignedval += float('inf') * t * aicolor
             xp += 1
         if xp > 3:
             xp = 0; yp += 1
@@ -162,7 +162,7 @@ def assignvalue(boardproxy, aicolor):
         elif boardproxy[xp-3][yp+3] != t:
             xp += 1
         else:
-            assignedval += 10 * t * aicolor
+            assignedval += float('inf') * t * aicolor
             xp += 1
         if xp > 6:
             xp = 3; yp += 1
