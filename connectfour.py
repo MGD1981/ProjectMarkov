@@ -64,6 +64,7 @@ def minimax(depth, difftest, boardproxy, aicolor):
     #pdb.set_trace()
     value = assignvalue(boardproxy, aicolor)
     if depth == 0 or value != 0:
+        print value, depth #xxx
         return value
 
     maxval = [-float('inf'),randint(0,6)]
@@ -84,6 +85,7 @@ def minimax(depth, difftest, boardproxy, aicolor):
         else:
             return maxval[1]
     else:
+        print maxval, depth #xxx
         return maxval[0]
 
 
@@ -318,6 +320,7 @@ def intro():
     elif choice == '2':
         difficulty = 0
         ai = False
+        aicolor = -1
     else:
         intro()
     redturn = True
