@@ -26,8 +26,8 @@ def createlib(text):
     occurs."""
     print "\nCreating associative library of words..."
     worddict = {}
-    word = '\n'
     text = open(text).read().split(" ")
+    word = choice(text)
 
     for x in text:
         worddict.setdefault(word, []).append(x)
