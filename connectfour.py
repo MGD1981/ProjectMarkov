@@ -9,8 +9,6 @@ CSI="\x1B["
 reset=CSI+"m"
 # sample: print CSI+"31;40m" + "Colored Text" + CSI + "0m"
 
-
-
 class _Getch:
     """Gets a single character from standard input.  Does not echo to the
 screen."""
@@ -54,43 +52,60 @@ getch = _Getch()
 def cls():
     print CSI+"30;47m" + CSI+"2J" # clears screen
 
+def winstate(board):
+    if '0' not in str(board):
+        return 2 # stalemate
+    elif assignvalue(board) != 0:
+        return 1 # win
+    else:
+        return 0 # not end state
+
 def findy(board, x):
     y = 5
     while board[x][y] != 0:
         y -= 1
     return y
 
-def minimax(depth, difftest, boardproxy, aicolor):    
-    #pdb.set_trace()
-    value = assignvalue(boardproxy, aicolor)
-    if depth == 0 or value != 0:
-        print value, depth #xxx
-        return value
+def minimax(difficulty, boardproxy, depth=0):    
+#problem seems to be that when redwin value == greenwin value, it cancels out
+    p = playerturn(boardproxy)
+    maxval = -float('inf')
+    best_move = 7 
 
-    maxval = [-float('inf'),randint(0,6)]
     for x in range(len(boardproxy)):
         if boardproxy[x][0] != 0:
             continue
         y = findy(boardproxy, x)
-        boardproxy[x][y] = aicolor
-        value = (-minimax(depth - 1, difftest, boardproxy, -aicolor))
-        if maxval[0] < value:
-            maxval[1] = x
-        maxval = [max(maxval[0], value), maxval[1]]
+        boardproxy[x][y] = p 
+        depth += 1
+
+        if depth == difficulty or winstate(boardproxy) != 0:
+            maxval = assignvalue(boardproxy)
+            boardproxy[x][y] = 0
+            depth -= 1
+            return (maxval, 7) # 7 will turn into randint
+        
+        prev_max = maxval
+        maxval = max(maxval, -1 * minimax(difficulty, boardproxy, depth)[0])
+        if maxval > prev_max:
+            best_move = x
+        
         boardproxy[x][y] = 0
-    if depth == difftest:
-        if maxval[0] == 0:
-            return 7 # Will turn 7 into randint, or move to another test
-                     # depending on difficulty.
-        else:
-            return maxval[1]
+        depth -= 1
+
+    return (maxval, best_move) 
+
+def playerturn(board):
+    bsum = 0
+    for i in range(0,6):
+        bsum += sum(board[i])
+
+    if bsum == 0:
+        return 1 # Red = 1
     else:
-        print maxval, depth #xxx
-        return maxval[0]
+        return -1 # Green = -1
 
-
-
-def assignvalue(boardproxy, aicolor):
+def assignvalue(boardproxy): # Returns float('inf') for win, 0 otherwise.
     assignedval = 0
     xp = 0; yp = 0
     # Horizontal score
@@ -105,7 +120,7 @@ def assignvalue(boardproxy, aicolor):
         elif boardproxy[xp+3][yp] != t:
             xp += 1
         else:
-            assignedval += float('inf') * t * aicolor
+            assignedval = float('inf')
             xp += 1   
         if xp > 3:
             xp = 0; yp += 1
@@ -122,7 +137,7 @@ def assignvalue(boardproxy, aicolor):
         elif boardproxy[xp][yp+3] != t:
             xp += 1
         else:
-            assignedval += float('inf') * t * aicolor
+            assignedval = float('inf')
             xp += 1
         if xp > 6:
             xp = 0; yp += 1
@@ -139,7 +154,7 @@ def assignvalue(boardproxy, aicolor):
         elif boardproxy[xp+3][yp+3] != t:
             xp += 1
         else:
-            assignedval += float('inf') * t * aicolor
+            assignedval = float('inf')
             xp += 1
         if xp > 3:
             xp = 0; yp += 1
@@ -156,45 +171,54 @@ def assignvalue(boardproxy, aicolor):
         elif boardproxy[xp-3][yp+3] != t:
             xp += 1
         else:
-            assignedval += float('inf') * t * aicolor
+            assignedval = float('inf')
             xp += 1
         if xp > 6:
             xp = 3; yp += 1
     return assignedval
 
 
-def dispboard(redturn, ai, boarddisp, aicolor):
+def chips(tile):
+    if tile == 1:
+        return (CSI + "31m" + "○" + CSI+"30m")
+    elif tile == -1:
+        return (CSI + "32m" + "○" + CSI+"30m")
+    else:
+        return ' '
+
+def dispboard(boarddata):
     # Display the board
     cls()
-    if redturn:
+    if playerturn(boarddata) == 1:
         player = CSI+"31m" + "Red" + CSI+"30m" + "'s turn  "
     else:
         player = CSI+"32m" + "Green" + CSI+"30m" + "'s turn"
+    oldboard = boarddata
     print player + "   ┌─┬─┬─┬─┬─┬─┬─┐"
     for y in range(6):
         print"               │%s│%s│%s│%s│%s│%s│%s│" % (
-                boarddisp[0][y],boarddisp[1][y],boarddisp[2][y],
-                boarddisp[3][y],boarddisp[4][y],boarddisp[5][y],
-                boarddisp[6][y])
+                chips(boarddata[0][y]), chips(boarddata[1][y]),
+                chips(boarddata[2][y]), chips(boarddata[3][y]),
+                chips(boarddata[4][y]), chips(boarddata[5][y]),
+                chips(boarddata[6][y]))
         if y != 5:
             print"               ├─┼─┼─┼─┼─┼─┼─┤"
         else:
             print"               └─┴─┴─┴─┴─┴─┴─┘"
+    boarddata = oldboard
 
-    if ai and (
-            (not redturn and aicolor == -1) or (redturn and aicolor == 1)):
+def boardmessage(p, ai, aicolor):
+    if ai and (p == aicolor):
         print "\nComputer's turn; hit any key.\n"
     else:
         print ("Select column:  " + CSI+"34;1m" + "1 2 3 4 5 6 7    Q" +
                CSI+"30;21m" + "uit")
         print "\n"
     
-def play(redturn, ai, boarddisp, boarddata, difficulty, aicolor):
-    dispboard(redturn, ai, boarddisp, aicolor)
-    if redturn:
-        txtcolor = CSI+"31m"
-    else:
-        txtcolor = CSI+"32m"
+def play(ai, boarddata, difficulty, aicolor):
+    p = playerturn(boarddata)
+    dispboard(boarddata)
+    boardmessage(p, ai, aicolor)
     
     # Stalemate test
     toprow = [(boarddata[x][0]) for x in range(len(boarddata))]
@@ -206,16 +230,8 @@ def play(redturn, ai, boarddisp, boarddata, difficulty, aicolor):
     choice = 0
     while choice == 0:
         choice = getch()
-        if ai and (
-                (not redturn and aicolor == -1) or (redturn and aicolor == 1)):
-            if difficulty == 1:
-                choice = minimax(1, 1, boarddata, -aicolor)
-            if difficulty >= 2:
-                choice = minimax(2, 2, boarddata, -aicolor)
-            if difficulty == 4 and choice == 7:
-                choice = minimax(difficulty, difficulty,
-                                 boarddata, -aicolor)
-            choice = choice + 1                   
+        if ai and (p == aicolor):
+            choice = (minimax(difficulty, boarddata)[1]) + 1
         else:     
             if choice == 'q' or choice == 'Q':
                 print "\n"
@@ -234,37 +250,27 @@ def play(redturn, ai, boarddisp, boarddata, difficulty, aicolor):
                 choice = randint(1,7)
                 
                 
-    # Red = 1, Green = -1
-    if redturn:
-        polarity = 1
-    else:
-        polarity = -1
     y = findy(boarddata, choice-1)
-    boarddata[choice-1][y] = polarity
-    boarddisp[choice-1][y] = txtcolor + "○" + CSI+"30m"
+    boarddata[choice-1][y] = p
     # See if that's a win
-    whowon = assignvalue(boarddata, aicolor)
+    whowon = assignvalue(boarddata) * p
     if whowon == 0:
-        redturn = not redturn
-        play(redturn, ai, boarddisp, boarddata, difficulty, aicolor)
+        play(ai, boarddata, difficulty, aicolor)
     else:
-        if whowon < 0:
+        if whowon > 0:
             whowon = CSI+"31m" + "Red" + CSI+"30m"
         else:
             whowon = CSI+"32m" + "Green" + CSI+"30m"
-        dispboard(redturn, ai, boarddisp, aicolor)
+        dispboard(boarddata)
         print "%s is the winner!\n" % whowon
         print CSI+"0m" # resets color
         exit() 
-        
-    
 
     
 def boardsetup():
     # board is 7x6 matrix
-    boarddisp = [[" " for x in xrange(6)] for x in xrange(7)]
     boarddata = [[0 for x in xrange(6)] for x in xrange(7)]
-    return boarddisp, boarddata
+    return boarddata
     
 def intro():
     cls()
@@ -323,9 +329,8 @@ def intro():
         aicolor = -1
     else:
         intro()
-    redturn = True
-    boarddisp, boarddata = boardsetup()
-    play(redturn, ai, boarddisp, boarddata, difficulty, aicolor)
+    boarddata = boardsetup()
+    play(ai, boarddata, difficulty, aicolor)
 
 
 cls()
