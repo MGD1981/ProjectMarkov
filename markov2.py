@@ -1,19 +1,27 @@
 from sys import argv
 from random import choice
+<<<<<<< HEAD
 import datetime
 import pdb
 
 if __name__ == '__main__':
     script, file1 = argv
+=======
+
+script, file1 = argv
+>>>>>>> 54e6074016e74fb60f042145d9c9f103ce227f21
 
 def genchain(dictsource, length):
     """
     Returns a string 'length' words long, based on dictionary 'dictsource'
     and generated with a Markov chain algorithm."""
     print "\nGenerating Markov chain...\n"
+<<<<<<< HEAD
 
     t = datetime.datetime.now()
 
+=======
+>>>>>>> 54e6074016e74fb60f042145d9c9f103ce227f21
     newtext = []
     word = choice(dictsource.keys())
 
@@ -22,8 +30,11 @@ def genchain(dictsource, length):
         newtext.append(word)
         length -= 1
 
+<<<<<<< HEAD
     print datetime.datetime.now() - t
 
+=======
+>>>>>>> 54e6074016e74fb60f042145d9c9f103ce227f21
     return " ".join(newtext)
     
 
@@ -39,10 +50,20 @@ def createlib(text):
 
     for x in text:
         worddict.setdefault(word, []).append(x)
+<<<<<<< HEAD
         word = x
     return worddict 
 
 
+=======
+        oldword = word
+        word = x
+   
+    return worddict 
+
+
+
+>>>>>>> 54e6074016e74fb60f042145d9c9f103ce227f21
 print "\nHow many words would you like to generate?"
 try:
     w = int(raw_input(">> "))
@@ -52,7 +73,10 @@ if w <= 0:
     w = 500
 
 worddict = createlib(file1)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 54e6074016e74fb60f042145d9c9f103ce227f21
 newtext = genchain(worddict, w)
 
 print newtext

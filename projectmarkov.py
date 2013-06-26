@@ -28,12 +28,18 @@ else:
 s = f.read()
 f.close()
 
+<<<<<<< HEAD
 if len(argv) < 2:
     content = htmlslicer.slice(s) 
 else:
     content = s.split()
 
 newtext = markov.genchain(content, w)
+=======
+slicedcontent = htmlslicer.slice(s) 
+
+newtext = markov.genchain(slicedcontent, w)
+>>>>>>> 54e6074016e74fb60f042145d9c9f103ce227f21
 
 print newtext
 
